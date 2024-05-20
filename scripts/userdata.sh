@@ -93,11 +93,23 @@ chmod 644 /etc/cron.d/s3backupjob
 
 # Install mods
 mkdir -p $HOME/valheim-server/mods $HOME/valheim-server/config/bepinex/plugins
-curl -o $HOME/valheim-server/mods/devcommands.zip https://gcdn.thunderstore.io/live/repository/packages/JereKuusela-Server_devcommands-1.79.0.zip
-curl -o $HOME/valheim-server/mods/upgradeworld.zip https://gcdn.thunderstore.io/live/repository/packages/JereKuusela-Upgrade_World-1.53.0.zip
+DIRECTORY="$HOME/valheim-server/mods"
+cd "$DIRECTORY" || exit
+wget --content-disposition https://thunderstore.io/package/download/JereKuusela/Server_devcommands/1.79.0/
+wget --content-disposition https://thunderstore.io/package/download/JereKuusela/Upgrade_World/1.53.0/
+wget --content-disposition https://thunderstore.io/package/download/Advize/PlantEverything/1.17.3/
+wget --content-disposition https://thunderstore.io/package/download/Advize/PlantEasily/1.8.0/
+wget --content-disposition https://thunderstore.io/package/download/Buttergeland/CraftFromContainers/3.5.2/
+wget --content-disposition https://thunderstore.io/package/download/RandyKnapp/EquipmentAndQuickSlots/2.1.13/
 
-unzip -o -d $HOME/valheim-server/mods/ $HOME/valheim-server/mods/devcommands.zip
-unzip -o -d $HOME/valheim-server/mods/ $HOME/valheim-server/mods/upgradeworld.zip
+for zipfile in *.zip; do
+  # Check if any zip files exist
+  [ -e "$zipfile" ] || continue
+
+  # Unzip the file with overwrite flag
+  unzip -o "$zipfile"
+done
+
 mv $HOME/valheim-server/mods/*.dll $HOME/valheim-server/config/bepinex/plugins/
 rm -rf $HOME/valheim-server/mods/
 
