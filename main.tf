@@ -151,15 +151,6 @@ data "aws_subnet" "game_server_sn" {
   id = aws_subnet.game_server_sn.id
 }
 
-# resource "aws_ebs_volume" "game_server_ebs" {
-#   availability_zone = data.aws_subnet.game_server_sn.availability_zone
-#   size              = 10
-#   type              = "gp3"
-#   tags = {
-#     Name = "game_server_data"
-#   }
-# }
-
 output "game_server_ip" {
   description = "Use this IP to connect to the game server!"
   value       = aws_eip.game_server_eip.public_ip
