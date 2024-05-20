@@ -1,52 +1,55 @@
-resource "aws_vpc" "tf-valheim-vpc" {
-  cidr_block       = "10.51.0.0/16"
-  instance_tenancy = "default"
+resource "aws_key_pair" "game_server_key" {
+  key_name   = "game_server_key"
+  public_key = var.public_key
+}
 
+resource "aws_vpc" "game_server_vpc" {
+  cidr_block       = var.vpc_cidr_block
+  instance_tenancy = "default"
   tags = {
-    Name = "tf-valheim-vpc"
+    Name = "game_server_vpc"
   }
 }
 
-resource "aws_subnet" "tf-valheim-sn" {
-  vpc_id                  = aws_vpc.tf-valheim-vpc.id
-  cidr_block              = "10.51.6.0/24"
-  availability_zone       = "us-east-1a"
+resource "aws_subnet" "game_server_sn" {
+  vpc_id                  = aws_vpc.game_server_vpc.id
+  cidr_block              = cidrsubnet(aws_vpc.game_server_vpc.cidr_block, 4, 1)
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "tf-valheim-sn"
+    Name = "game_server_sn"
   }
 }
 
-resource "aws_internet_gateway" "tf-valheim-igw" {
-  vpc_id = aws_vpc.tf-valheim-vpc.id
+resource "aws_internet_gateway" "game_server_igw" {
+  vpc_id = aws_vpc.game_server_vpc.id
   tags = {
-    Name = "tf-valheim-igw"
+    Name = "game_server_igw"
   }
 }
 
-resource "aws_route_table" "tf-valheim-rt" {
-  vpc_id = aws_vpc.tf-valheim-vpc.id
+resource "aws_route_table" "game_server_rt" {
+  vpc_id = aws_vpc.game_server_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.tf-valheim-igw.id
+    gateway_id = aws_internet_gateway.game_server_igw.id
   }
 
   tags = {
-    Name = "tf-valheim-rt"
+    Name = "game_server_rt"
   }
 }
 
-resource "aws_route_table_association" "tf-valheim-rt-assoc" {
-  subnet_id      = aws_subnet.tf-valheim-sn.id
-  route_table_id = aws_route_table.tf-valheim-rt.id
+resource "aws_route_table_association" "game_server_rt_assoc" {
+  subnet_id      = aws_subnet.game_server_sn.id
+  route_table_id = aws_route_table.game_server_rt.id
 }
 
-resource "aws_security_group" "tf-valheim-sg" {
-  name        = "tf-valheim-sg"
+resource "aws_security_group" "game_server_sg" {
+  name        = "game_server_sg"
   description = "Allow SSH and UDP"
-  vpc_id      = aws_vpc.tf-valheim-vpc.id
+  vpc_id      = aws_vpc.game_server_vpc.id
 
   ingress {
     description = "SSH from VPC"
@@ -58,8 +61,8 @@ resource "aws_security_group" "tf-valheim-sg" {
 
   ingress {
     description = "UDP from VPC"
-    from_port   = 2456
-    to_port     = 2457
+    from_port   = var.game_port
+    to_port     = var.game_port
     protocol    = "udp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -72,105 +75,83 @@ resource "aws_security_group" "tf-valheim-sg" {
   }
 
   tags = {
-    Name = "valheim-sg"
+    Name = "game_server_sg"
   }
+}
+
+resource "aws_iam_instance_profile" "game_server_instance_profile" {
+  name = "game_server_instance_profile"
+  role = aws_iam_role.game_server_role.name
+}
+
+resource "aws_iam_role" "game_server_role" {
+  name = "game_server_role"
+  assume_role_policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Principal" : {
+          "Service" : "ec2.amazonaws.com"
+        },
+        "Action" : "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "game_server_policy_attach" {
+  role       = aws_iam_role.game_server_role.id
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 data "aws_region" "current" {}
 
 locals {
-  timestamped_tag = "${var.instance_tag}-${timestamp()}"
+  timestamped_tag = "${var.instance_tag}_${timestamp()}"
   aws_region      = data.aws_region.current.name
 }
 
-resource "aws_launch_template" "tf-valheim-lt" {
-  depends_on    = [aws_eip.valheim-eip]
-  ebs_optimized = "false"
-  image_id      = "ami-079db87dc4c10ac91"
-  instance_type = "t3a.medium"
-  key_name      = var.key_name
-  name          = "tf-valheim-lt"
-  user_data = base64encode(templatefile("${path.module}/scripts/userdata.sh", {
-    EIP_ALLOC   = aws_eip.valheim-eip.id
-    SERVER_NAME = var.SERVER_NAME
-    WORLD_NAME  = var.WORLD_NAME
-    SERVER_PASS = var.SERVER_PASS
-    STEAM_ID    = var.STEAM_ID
-    AWS_REGION  = local.aws_region
-    S3_REGION   = var.S3_REGION
-    S3_URI      = var.S3_URI
-  }))
-  vpc_security_group_ids = [
-    aws_security_group.tf-valheim-sg.id
-  ]
-
-  credit_specification {
-    cpu_credits = "unlimited"
-  }
-
-  block_device_mappings {
-    device_name = "/dev/xvda"
-
-    ebs {
-      delete_on_termination = "true"
-      encrypted             = "false"
-      volume_size           = 20
-      volume_type           = "gp3"
-    }
-  }
-
-  iam_instance_profile {
-    arn = var.instance_profile_arn
-  }
-
-  instance_market_options {
-    market_type = "spot"
-
-    spot_options {
-      spot_instance_type = "one-time"
-    }
-  }
-
-  tag_specifications {
-    resource_type = "instance"
-
-    tags = {
-      Name = local.timestamped_tag
-    }
-  }
-}
-
-resource "aws_autoscaling_group" "tf-valheim-asg" {
+resource "aws_autoscaling_group" "game_server_asg" {
   desired_capacity    = 1
   max_size            = 1
   min_size            = 1
-  vpc_zone_identifier = [aws_subnet.tf-valheim-sn.id]
+  vpc_zone_identifier = [aws_subnet.game_server_sn.id]
 
   launch_template {
-    id      = aws_launch_template.tf-valheim-lt.id
+    id      = aws_launch_template.game_server_lt.id
     version = "$Latest"
   }
-  depends_on = [aws_eip.valheim-eip]
+  depends_on = [aws_eip.game_server_eip]
 }
 
-resource "aws_eip" "valheim-eip" {
-  vpc              = true
+resource "aws_eip" "game_server_eip" {
+  #   domain           = "vpc"
   public_ipv4_pool = "amazon"
-  depends_on       = [aws_internet_gateway.tf-valheim-igw]
+  depends_on       = [aws_internet_gateway.game_server_igw]
   tags = {
     Name = local.timestamped_tag
   }
 }
 
-data "aws_instance" "valheim" {
+data "aws_instance" "game_server" {
   filter {
     name   = "tag:Name"
     values = [local.timestamped_tag]
   }
-  depends_on = [aws_autoscaling_group.tf-valheim-asg]
+  depends_on = [aws_autoscaling_group.game_server_asg]
 }
 
 resource "aws_eip_association" "eip_assoc" {
-  instance_id   = data.aws_instance.valheim.id
-  allocation_id = aws_eip.valheim-eip.id
+  instance_id   = data.aws_instance.game_server.id
+  allocation_id = aws_eip.game_server_eip.id
+}
+
+data "aws_subnet" "game_server_sn" {
+  id = aws_subnet.game_server_sn.id
+}
+
+output "game_server_ip" {
+  description = "Use this IP to connect to the game server!"
+  value       = aws_eip.game_server_eip.public_ip
 }
