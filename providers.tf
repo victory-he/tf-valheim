@@ -8,13 +8,10 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-2"
+  # Configuration options
 }
 
 terraform {
   backend "s3" {
-    bucket = "valheim-sigr-2"
-    key    = "tf-state/terraform.tfstate"
-    region = "us-west-2"
   }
 }
