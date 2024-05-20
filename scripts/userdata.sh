@@ -91,6 +91,28 @@ SHELL=/bin/sh
 EOF
 chmod 644 /etc/cron.d/s3backupjob
 
+# Create spot termination notice script
+cat > $HOME/valheim-server/scripts/termination-notice.sh << EOF
+#!/bin/bash
+
+# Define the URL to check for termination notice   
+URL="http://169.254.169.254/latest/meta-data/spot/instance-action"
+
+# Check if the termination notice exists
+RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $URL)
+
+if [ "$RESPONSE" -eq 200 ]; then
+  echo "Termination notice received. Running upload script."
+  # Run the upload script
+  $HOME/valheim-server/scripts/s3backup.sh
+else
+  echo "No termination notice. Exiting."
+fi
+EOF
+chmod +x $HOME/valheim-server/scripts/termination-notice.sh
+
+(crontab -l 2>/dev/null; echo "* * * * * $HOME/valheim-server/scripts/termination-notice.sh >> /var/log/check_termination_notice.log 2>&1") | crontab -
+
 # Install mods
 mkdir -p $HOME/valheim-server/mods $HOME/valheim-server/config/bepinex/plugins
 DIRECTORY="$HOME/valheim-server/mods"
