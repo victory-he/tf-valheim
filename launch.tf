@@ -1,5 +1,5 @@
 data "aws_ami" "amazon_linux_2023" {
-  most_recent  = true
+  most_recent = true
 
   filter {
     name   = "name"
@@ -30,7 +30,6 @@ data "aws_ami" "amazon_linux_2023" {
 resource "aws_launch_template" "game_server_lt" {
   depends_on    = [aws_eip.game_server_eip]
   ebs_optimized = "false"
-  # image_id      = "ami-09694bfab577e90b0"
   image_id      = data.aws_ami.amazon_linux_2023.id
   instance_type = var.instance_type
   key_name      = aws_key_pair.game_server_key.id
