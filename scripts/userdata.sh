@@ -99,7 +99,7 @@ cat > $HOME/valheim-server/scripts/termination-notice.sh << EOF
 URL="http://169.254.169.254/latest/meta-data/spot/instance-action"
 
 # Check if the termination notice exists
-RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $URL)
+RESPONSE=$(curl -s -o /dev/null -w "%%{http_code}" $URL)
 
 if [ "$RESPONSE" -eq 200 ]; then
   echo "Termination notice received. Running upload script."
@@ -120,9 +120,11 @@ cd "$DIRECTORY" || exit
 wget --content-disposition https://thunderstore.io/package/download/JereKuusela/Server_devcommands/1.79.0/
 wget --content-disposition https://thunderstore.io/package/download/JereKuusela/Upgrade_World/1.53.0/
 wget --content-disposition https://thunderstore.io/package/download/Advize/PlantEverything/1.17.3/
-wget --content-disposition https://thunderstore.io/package/download/Advize/PlantEasily/1.8.0/
-wget --content-disposition https://thunderstore.io/package/download/Buttergeland/CraftFromContainers/3.5.2/
-wget --content-disposition https://thunderstore.io/package/download/RandyKnapp/EquipmentAndQuickSlots/2.1.13/
+wget --content-disposition https://thunderstore.io/package/download/Azumatt/AzuCraftyBoxes/1.3.0/
+wget --content-disposition https://thunderstore.io/package/download/Smoothbrain/TargetPortal/1.1.19/
+wget --content-disposition https://thunderstore.io/package/download/Smoothbrain/Resurrection/1.0.11/
+wget --content-disposition https://thunderstore.io/package/download/Azumatt/AzuExtendedPlayerInventory/1.4.3/
+wget --content-disposition https://thunderstore.io/package/download/coemt/Birds/0.1.7/
 
 for zipfile in *.zip; do
   # Check if any zip files exist
