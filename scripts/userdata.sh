@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Environment variables from Terraform
-SERVER_NAME=${SERVER_NAME}
-WORLD_NAME=${WORLD_NAME}
-SERVER_PASS=${SERVER_PASS}
-STEAM_ID=${STEAM_ID}
-AWS_DEFAULT_REGION=${AWS_REGION}
-S3_REGION=${S3_REGION}
-EIP_ALLOC=${EIP_ALLOC}
-S3_URI=${S3_URI}
+# SERVER_NAME=${SERVER_NAME}
+# WORLD_NAME=${WORLD_NAME}
+# SERVER_PASS=${SERVER_PASS}
+# STEAM_ID=${STEAM_ID}
+# AWS_DEFAULT_REGION=${AWS_REGION}
+# S3_REGION=${S3_REGION}
+# EIP_ALLOC=${EIP_ALLOC}
+# S3_URI=${S3_URI}
 S3_KEY=`aws s3 --region $S3_REGION ls $S3_URI --recursive | sed "s/$WORLD_NAME\///" | sort | tail -n1 | awk '{ print $4 }'`
 
 # Associate allocated EIP
@@ -92,7 +92,8 @@ EOF
 chmod 644 /etc/cron.d/s3backupjob
 
 # Create spot termination notice script
-cat > $HOME/valheim-server/scripts/termination-notice.sh << EOF
+
+cat >> $HOME/valheim-server/scripts/termination-notice.sh << 'EOF'
 #!/bin/bash
 
 # Define the URL to check for termination notice   
