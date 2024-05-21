@@ -1,32 +1,3 @@
-data "aws_ami" "amazon_linux_2023" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-*-kernel-*"]
-  }
-
-  filter {
-    name   = "owner-id"
-    values = ["137112412989"] # Amazon's AWS account ID
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-}
-
 resource "aws_launch_template" "game_server_lt" {
   depends_on    = [aws_eip.game_server_eip]
   ebs_optimized = "false"
@@ -81,5 +52,29 @@ resource "aws_launch_template" "game_server_lt" {
     tags = {
       Name = local.timestamped_tag
     }
+  }
+}
+
+data "aws_ami" "amazon_linux_2023" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-kernel-*"]
+  }
+  filter {
+    name   = "owner-id"
+    values = ["137112412989"] # Amazon's AWS account ID
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
   }
 }

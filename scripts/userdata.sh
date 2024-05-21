@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# Environment variables from Terraform
-# SERVER_NAME=${SERVER_NAME}
-# WORLD_NAME=${WORLD_NAME}
-# SERVER_PASS=${SERVER_PASS}
-# STEAM_ID=${STEAM_ID}
-# AWS_DEFAULT_REGION=${AWS_REGION}
-# S3_REGION=${S3_REGION}
-# EIP_ALLOC=${EIP_ALLOC}
-# S3_URI=${S3_URI}
-S3_KEY=`aws s3 --region $S3_REGION ls $S3_URI --recursive | sed "s/$WORLD_NAME\///" | sort | tail -n1 | awk '{ print $4 }'`
-
 # Associate allocated EIP
 TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
 INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/instance-id)
@@ -40,6 +29,7 @@ export HOME=/root
 mkdir -p $HOME/valheim-server/config/backups $HOME/valheim-server/config/worlds_local $HOME/valheim-server/data $HOME/valheim-server/scripts
 
 # Download Valheim save from S3
+S3_KEY=`aws s3 --region $S3_REGION ls $S3_URI --recursive | sed "s/$WORLD_NAME\///" | sort | tail -n1 | awk '{ print $4 }'`
 file_path="$HOME/valheim-server/config/worlds_local/$WORLD_NAME.db"
 if [ ! -f "$file_path" ]; then
     echo "The file $file_path does not exist. Proceeding with copying from S3..."
@@ -92,7 +82,6 @@ EOF
 chmod 644 /etc/cron.d/s3backupjob
 
 # Create spot termination notice script
-
 cat >> $HOME/valheim-server/scripts/termination-notice.sh << 'EOF'
 #!/bin/bash
 
@@ -153,3 +142,4 @@ EOF
 curl -o $HOME/valheim-server/docker-compose.yaml https://raw.githubusercontent.com/lloesche/valheim-server-docker/main/docker-compose.yaml
 cd $HOME/valheim-server
 docker-compose up
+
