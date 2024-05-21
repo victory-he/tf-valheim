@@ -126,7 +126,6 @@ resource "aws_autoscaling_group" "game_server_asg" {
 }
 
 resource "aws_eip" "game_server_eip" {
-  #   domain           = "vpc"
   public_ipv4_pool = "amazon"
   depends_on       = [aws_internet_gateway.game_server_igw]
   tags = {
