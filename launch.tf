@@ -1,5 +1,5 @@
 data "aws_ami" "amazon_linux_2023" {
-  most_recent = true
+  most_recent  = true
 
   filter {
     name   = "name"
@@ -9,6 +9,21 @@ data "aws_ami" "amazon_linux_2023" {
   filter {
     name   = "owner-id"
     values = ["137112412989"] # Amazon's AWS account ID
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
   }
 }
 
