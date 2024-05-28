@@ -107,10 +107,10 @@ chmod +x $HOME/valheim-server/scripts/termination-notice.sh
 mkdir -p $HOME/valheim-server/mods $HOME/valheim-server/config/bepinex/plugins
 DIRECTORY="$HOME/valheim-server/mods"
 cd "$DIRECTORY" || exit
-wget --content-disposition https://thunderstore.io/package/download/JereKuusela/Server_devcommands/1.79.0/
-wget --content-disposition https://thunderstore.io/package/download/JereKuusela/Upgrade_World/1.53.0/
-wget --content-disposition https://thunderstore.io/package/download/Advize/PlantEverything/1.17.3/
-wget --content-disposition https://thunderstore.io/package/download/Azumatt/AzuCraftyBoxes/1.3.0/
+wget --content-disposition https://thunderstore.io/package/download/JereKuusela/Server_devcommands/1.81.0/
+wget --content-disposition https://thunderstore.io/package/download/JereKuusela/Upgrade_World/1.54.0/
+wget --content-disposition https://thunderstore.io/package/download/Advize/PlantEverything/1.18.0/
+wget --content-disposition https://thunderstore.io/package/download/Azumatt/AzuCraftyBoxes/1.4.0/
 wget --content-disposition https://thunderstore.io/package/download/Smoothbrain/TargetPortal/1.1.19/
 wget --content-disposition https://thunderstore.io/package/download/Smoothbrain/Resurrection/1.0.11/
 wget --content-disposition https://thunderstore.io/package/download/Azumatt/AzuExtendedPlayerInventory/1.4.3/
@@ -142,4 +142,3 @@ EOF
 curl -o $HOME/valheim-server/docker-compose.yaml https://raw.githubusercontent.com/lloesche/valheim-server-docker/main/docker-compose.yaml
 cd $HOME/valheim-server
 docker-compose up
-
