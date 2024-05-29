@@ -8,3 +8,5 @@ tofu init \
 -backend-config="key=${TFSTATE_KEY}" \
 -backend-config="region=${TFSTATE_REGION}" 
 ```
+
+$
