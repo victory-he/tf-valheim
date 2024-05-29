@@ -1,5 +1,14 @@
 #!/bin/bash
 
+SERVER_NAME=${SERVER_NAME}
+WORLD_NAME=${WORLD_NAME}
+SERVER_PASS=${SERVER_PASS}
+STEAM_ID=${STEAM_ID}
+AWS_DEFAULT_REGION=${AWS_REGION}
+S3_REGION=${S3_REGION}
+EIP_ALLOC=${EIP_ALLOC}
+S3_URI=${S3_URI}
+
 # Associate allocated EIP
 TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
 INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/instance-id)
@@ -10,7 +19,7 @@ aws ec2 associate-address --instance-id $INSTANCE_ID --allocation-id $EIP_ALLOC 
 
 # Install cronie since Amazon Linux 2023 doesn't include a cron scheduler by default
 yum update -y
-yum install cronie -y
+yum install cronie wget unzip zip -y
 systemctl enable crond.service
 systemctl start crond.service
 
